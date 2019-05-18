@@ -1,6 +1,7 @@
 package im.huahang.spinlocks;
 
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LockTests {
     private static long counter = 0;
@@ -15,6 +16,11 @@ public class LockTests {
         System.out.println("n,duration,counter");
         for (int n = 1; n <= 100; ++n) {
             runTest(n, TTASLock.class);
+        }
+        System.out.println("Java ReentrantLock");
+        System.out.println("n,duration,counter");
+        for (int n = 1; n <= 100; ++n) {
+            runTest(n, ReentrantLock.class);
         }
     }
 
