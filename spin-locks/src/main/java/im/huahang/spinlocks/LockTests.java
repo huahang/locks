@@ -1,5 +1,9 @@
 package im.huahang.spinlocks;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -7,37 +11,45 @@ public class LockTests {
     private static long counter = 0;
 
     public static void main(final String[] args) throws Exception {
-        System.out.println("TASLock");
-        System.out.println("n,duration,counter");
-        for (int n = 1; n <= 100; ++n) {
-            runTest(n, TASLock.class);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("TASLock.csv")))) {
+            emit("n,duration,counter", writer);
+            for (int n = 1; n <= 20; ++n) {
+                runTest(n, TASLock.class, writer);
+            }
         }
-        System.out.println("TTASLock");
-        System.out.println("n,duration,counter");
-        for (int n = 1; n <= 100; ++n) {
-            runTest(n, TTASLock.class);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("TTASLock.csv")))) {
+            emit("n,duration,counter", writer);
+            for (int n = 1; n <= 20; ++n) {
+                runTest(n, TTASLock.class, writer);
+            }
         }
-        System.out.println("Java ReentrantLock");
-        System.out.println("n,duration,counter");
-        for (int n = 1; n <= 100; ++n) {
-            runTest(n, ReentrantLock.class);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ReentrantLock.csv")))) {
+            emit("n,duration,counter", writer);
+            for (int n = 1; n <= 20; ++n) {
+                runTest(n, ReentrantLock.class, writer);
+            }
         }
     }
 
-    private static void runTest(int n, Class<? extends Lock> lockClass) throws Exception {
+    private static void emit(final String line, final BufferedWriter writer) throws IOException {
+        System.out.println(line);
+        writer.write(line);
+        writer.newLine();
+    }
+
+    private static void runTest(int n, Class<? extends Lock> lockClass, BufferedWriter writer) throws Exception {
         final Lock lock = lockClass.getDeclaredConstructor().newInstance();
+        counter = 0;
         long begin = System.nanoTime();
         Thread[] threads = new Thread[n];
         for (int i = 0; i < n; ++i) {
-            threads[i] = new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 8192; ++i) {
-                        lock.lock();
-                        try {
-                            counter++;
-                        } finally {
-                            lock.unlock();
-                        }
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < 65536; ++j) {
+                    lock.lock();
+                    try {
+                        counter++;
+                    } finally {
+                        lock.unlock();
                     }
                 }
             });
@@ -50,6 +62,6 @@ public class LockTests {
         }
         long end = System.nanoTime();
         long duration = end - begin;
-        System.out.println(n + "," + duration + "," + counter);
+        emit(n + "," + duration + "," + counter, writer);
     }
 }
