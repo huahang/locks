@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class LockTests {
-    private static long counter = 0;
+    private static volatile long counter = 0;
 
     public static void main(final String[] args) throws Exception {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("TASLock.csv")))) {
