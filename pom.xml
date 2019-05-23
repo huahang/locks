@@ -11,6 +11,7 @@
 
   <modules>
     <module>spin-locks</module>
+    <module>volatile-tests</module>
   </modules>
 
   <build>
